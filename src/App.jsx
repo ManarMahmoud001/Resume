@@ -15,7 +15,9 @@ import {
   Download,
   ArrowUpRight,
   Megaphone,
-  Terminal
+  Terminal,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function App() {
@@ -28,6 +30,7 @@ export default function App() {
   });
 
   const [activeCarouselIdx, setActiveCarouselIdx] = useState(0);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -68,6 +71,7 @@ export default function App() {
 
   const changeTab = (tab) => {
     setActiveTab(tab);
+    setMobileNavOpen(false);
     const newHash = tab === 'all' ? '#overview' : `#${tab}`;
     window.history.pushState(null, '', newHash);
   };
@@ -462,32 +466,32 @@ export default function App() {
   const displayedBrands = activeTab === 'marketing' ? marketingBrands : activeTab === 'dev' ? devBrands : allBrands;
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans-body antialiased selection:bg-amber-100 selection:text-stone-900 relative">
+    <div className="min-h-screen bg-[#FAF8F5] text-stone-900 font-sans-body antialiased selection:bg-amber-100 selection:text-stone-900 relative max-w-[100vw] overflow-x-hidden">
       {/* Scroll Progress Bar */}
       <motion.div
         className="fixed top-0 left-0 right-0 h-1 bg-stone-900 z-50 origin-left"
         style={{ scaleX }}
       />
 
-      {/* Navigation */}
-      <nav className="sticky top-0 z-40 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-stone-200/80 transition-all duration-300">
-        <div className="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+      {/* Navigation - Responsive Navbar & Mobile Menu */}
+      <nav className="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-stone-200/80 transition-all duration-300">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-11 h-11 rounded-full bg-stone-900 text-[#FAF8F5] flex items-center justify-center font-bold text-sm font-sans-body tracking-wider shadow-sm cursor-pointer"
+              className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-stone-900 text-[#FAF8F5] flex items-center justify-center font-bold text-xs sm:text-sm font-sans-body tracking-wider shadow-sm cursor-pointer shrink-0"
             >
               ME
             </motion.div>
-            <div>
-              <span className="font-sans-body font-bold text-stone-900 text-lg block leading-none tracking-tight">Manar Mahmoud</span>
-              <span className="text-xs text-stone-600 font-sans-body font-medium tracking-normal mt-1 block">Digital Marketing & Web Development</span>
+            <div className="truncate max-w-[170px] sm:max-w-none">
+              <span className="font-sans-body font-bold text-stone-900 text-base sm:text-lg block leading-tight tracking-tight truncate">Manar Mahmoud</span>
+              <span className="text-[11px] sm:text-xs text-stone-600 font-sans-body font-medium tracking-normal block truncate">Digital Marketing & Web Dev</span>
             </div>
           </div>
 
-          {/* Persona Switcher */}
-          <div className="bg-stone-200/60 p-1.5 rounded-full flex items-center gap-1 font-sans-body text-xs font-bold border border-stone-300/60">
+          {/* Desktop Persona Switcher */}
+          <div className="hidden md:flex bg-stone-200/60 p-1.5 rounded-full items-center gap-1 font-sans-body text-xs font-bold border border-stone-300/60">
             {['all', 'marketing', 'dev'].map((t) => (
               <button
                 key={t}
@@ -508,27 +512,77 @@ export default function App() {
             ))}
           </div>
 
+          {/* Desktop Contact CTA */}
           <motion.a
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
             href="#contact"
-            className="hidden md:inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-[#FAF8F5] px-6 py-2.5 rounded-full text-xs font-sans-body font-bold tracking-wider uppercase transition shadow-sm"
+            className="hidden md:inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-800 text-[#FAF8F5] px-5 py-2.5 rounded-full text-xs font-sans-body font-bold tracking-wider uppercase transition shadow-sm"
           >
             <Mail className="w-4 h-4" />
             <span>Contact</span>
           </motion.a>
+
+          {/* Mobile Menu Toggle Button */}
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="md:hidden p-2 text-stone-900 rounded-lg hover:bg-stone-200/60 transition"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileNavOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
         </div>
+
+        {/* Mobile Dropdown Nav Menu */}
+        <AnimatePresence>
+          {mobileNavOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden bg-[#FAF8F5] border-b border-stone-200/90 px-4 py-4 space-y-3"
+            >
+              <div className="flex flex-col gap-2">
+                {[
+                  { id: 'all', label: 'Full Overview' },
+                  { id: 'marketing', label: 'Digital Marketing' },
+                  { id: 'dev', label: 'Web Development' }
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => changeTab(item.id)}
+                    className={`w-full text-left px-4 py-2.5 rounded-xl font-sans-body font-bold text-sm transition ${
+                      activeTab === item.id
+                        ? 'bg-stone-900 text-[#FAF8F5]'
+                        : 'bg-stone-200/50 text-stone-800 hover:bg-stone-200'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+              <a
+                href="#contact"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center justify-center gap-2 bg-stone-900 text-[#FAF8F5] w-full py-3 rounded-xl text-xs font-sans-body font-bold tracking-wider uppercase"
+              >
+                <Mail className="w-4 h-4" />
+                <span>Get In Touch</span>
+              </a>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-20 pb-24 border-b border-stone-200/80 bg-[#FAF8F5]">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-12 gap-12 items-start">
+      <section className="pt-10 sm:pt-16 md:pt-20 pb-16 sm:pb-24 border-b border-stone-200/80 bg-[#FAF8F5]">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
-              className="lg:col-span-8 space-y-8"
+              className="lg:col-span-8 space-y-6 sm:space-y-8"
             >
               <AnimatePresence mode="wait">
                 <motion.h1
@@ -537,7 +591,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.3 }}
-                  className="text-5xl sm:text-6xl lg:text-7xl font-serif-display text-stone-900 leading-[1.05] tracking-tight italic"
+                  className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-serif-display text-stone-900 leading-[1.1] sm:leading-[1.05] tracking-tight italic"
                 >
                   {activeTab === 'marketing' && 'Digital Marketing Manager owning full-funnel acquisition.'}
                   {activeTab === 'dev' && 'Web Developer crafting high-performance digital platforms.'}
@@ -545,16 +599,16 @@ export default function App() {
                 </motion.h1>
               </AnimatePresence>
 
-              <p className="text-xl sm:text-2xl text-stone-700 font-serif leading-relaxed max-w-3xl font-normal">
+              <p className="text-lg sm:text-xl md:text-2xl text-stone-700 font-serif leading-relaxed max-w-3xl font-normal">
                 Computer Science and AI graduate managing dual-company marketing roadmaps across Egypt and Jordan while writing clean, responsive code.
               </p>
 
-              <div className="flex flex-wrap items-center gap-5 pt-2 font-sans-body">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-2 font-sans-body">
                 <motion.a
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   href="#contact"
-                  className="bg-stone-900 hover:bg-stone-800 text-[#FAF8F5] font-bold px-8 py-4 rounded-full text-sm tracking-wider uppercase transition flex items-center gap-3 shadow-sm"
+                  className="bg-stone-900 hover:bg-stone-800 text-[#FAF8F5] font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-xs sm:text-sm tracking-wider uppercase transition flex items-center justify-center gap-3 shadow-sm"
                 >
                   <span>Get in touch</span>
                   <ArrowUpRight className="w-4 h-4" />
@@ -565,7 +619,7 @@ export default function App() {
                   href="https://drive.google.com/file/d/1Ev5F_-B7YlaWj_kgQq8GxPPE3yNpc5Zi/view?usp=sharing"
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-stone-200/60 hover:bg-stone-200 text-stone-900 border border-stone-300/80 font-bold px-8 py-4 rounded-full text-sm tracking-wider uppercase transition flex items-center gap-3 shadow-xs"
+                  className="bg-stone-200/60 hover:bg-stone-200 text-stone-900 border border-stone-300/80 font-bold px-6 sm:px-8 py-3.5 sm:py-4 rounded-full text-xs sm:text-sm tracking-wider uppercase transition flex items-center justify-center gap-3 shadow-xs"
                 >
                   <Download className="w-4 h-4 text-stone-700" />
                   <span>Download CV</span>
@@ -573,20 +627,20 @@ export default function App() {
               </div>
 
               {/* Brands */}
-              <div className="pt-10 border-t border-stone-200/80 font-sans-body">
-                <div className="text-xs uppercase font-bold text-stone-500 tracking-widest mb-4">
+              <div className="pt-8 sm:pt-10 border-t border-stone-200/80 font-sans-body">
+                <div className="text-[11px] sm:text-xs uppercase font-bold text-stone-500 tracking-widest mb-3 sm:mb-4">
                   {activeTab === 'marketing' && 'Marketing Engagements'}
                   {activeTab === 'dev' && 'Development Projects'}
                   {activeTab === 'all' && 'Organizations & Clients'}
                 </div>
-                <motion.div layout className="flex flex-wrap items-center gap-3 text-sm font-bold text-stone-800">
+                <motion.div layout className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-bold text-stone-800">
                   {displayedBrands.map((b, bidx) => (
                     <motion.span
                       key={b}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ duration: 0.2, delay: bidx * 0.05 }}
-                      className="bg-stone-200/60 border border-stone-300/70 px-4 py-2 rounded-xl"
+                      className="bg-stone-200/60 border border-stone-300/70 px-3 sm:px-4 py-1.5 sm:py-2 rounded-xl"
                     >
                       {b}
                     </motion.span>
@@ -595,39 +649,39 @@ export default function App() {
               </div>
             </motion.div>
 
-            {/* Side Card - Contextualized per Persona */}
+            {/* Side Card - Responsive Flex & Stack Layout */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="lg:col-span-4 font-sans-body"
+              className="lg:col-span-4 font-sans-body w-full"
             >
-              <div className="bg-white p-7 rounded-2xl border border-stone-200 shadow-sm space-y-6">
-                <div className="pb-5 border-b border-stone-200/80">
-                  <h3 className="font-sans-body font-bold text-stone-900 text-xl tracking-tight">Manar Mahmoud Elnoby</h3>
-                  <p className="text-sm text-stone-600 font-medium mt-1">Cairo, Egypt</p>
-                  <p className="text-sm text-stone-900 font-bold mt-1">B.S. Computer Science & AI</p>
+              <div className="bg-white p-5 sm:p-7 rounded-2xl border border-stone-200 shadow-sm space-y-4 sm:space-y-6">
+                <div className="pb-4 sm:pb-5 border-b border-stone-200/80">
+                  <h3 className="font-sans-body font-bold text-stone-900 text-lg sm:text-xl tracking-tight">Manar Mahmoud Elnoby</h3>
+                  <p className="text-xs sm:text-sm text-stone-600 font-medium mt-1">Cairo, Egypt</p>
+                  <p className="text-xs sm:text-sm text-stone-900 font-bold mt-1">B.S. Computer Science & AI</p>
                 </div>
 
-                <div className="space-y-4 text-sm font-sans-body">
-                  <div className="flex items-center justify-between py-2 border-b border-stone-200/70 gap-4">
-                    <span className="text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">EXPERIENCE</span>
-                    <span className="font-bold text-stone-900 text-base text-right">4+ Years</span>
+                <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm font-sans-body">
+                  <div className="flex items-center justify-between py-1.5 sm:py-2 border-b border-stone-200/70 gap-2 sm:gap-4">
+                    <span className="text-[11px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">EXPERIENCE</span>
+                    <span className="font-bold text-stone-900 text-sm sm:text-base text-right">4+ Years</span>
                   </div>
 
                   {/* Show Marketing Scope on Marketing and Overview tabs */}
                   {(activeTab === 'marketing' || activeTab === 'all') && (
-                    <div className="flex items-center justify-between py-2 border-b border-stone-200/70 gap-4">
-                      <span className="text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">MARKETING SCOPE</span>
-                      <span className="font-bold text-stone-900 text-base text-right">2 Active Companies</span>
+                    <div className="flex items-center justify-between py-1.5 sm:py-2 border-b border-stone-200/70 gap-2 sm:gap-4">
+                      <span className="text-[11px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">MARKETING SCOPE</span>
+                      <span className="font-bold text-stone-900 text-sm sm:text-base text-right">2 Active Companies</span>
                     </div>
                   )}
 
                   {/* Show Web Projects on Dev and Overview tabs */}
                   {(activeTab === 'dev' || activeTab === 'all') && (
-                    <div className="flex items-center justify-between py-2 gap-4">
-                      <span className="text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">WEB PROJECTS</span>
-                      <span className="font-bold text-stone-900 text-base text-right">10+ Deployed</span>
+                    <div className="flex items-center justify-between py-1.5 sm:py-2 gap-2 sm:gap-4">
+                      <span className="text-[11px] sm:text-xs font-bold text-stone-500 uppercase tracking-wider shrink-0">WEB PROJECTS</span>
+                      <span className="font-bold text-stone-900 text-sm sm:text-base text-right">10+ Deployed</span>
                     </div>
                   )}
                 </div>
@@ -639,33 +693,33 @@ export default function App() {
 
       {/* Campaign Dashboards Carousel */}
       {(activeTab === 'marketing' || activeTab === 'all') && (
-        <section className="py-20 bg-stone-100/60 border-b border-stone-200/80">
-          <div className="max-w-4xl mx-auto px-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <section className="py-12 sm:py-20 bg-stone-100/60 border-b border-stone-200/80">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 sm:mb-8">
               <div>
-                <span className="text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase bg-stone-200/70 px-3 py-1 rounded-full border border-stone-300/80">
+                <span className="text-[11px] sm:text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase bg-stone-200/70 px-3 py-1 rounded-full border border-stone-300/80">
                   VERIFIED ANALYTICS
                 </span>
-                <h2 className="text-3xl font-sans-body font-bold text-stone-900 mt-2 tracking-tight">
+                <h2 className="text-2xl sm:text-3xl font-sans-body font-bold text-stone-900 mt-2 tracking-tight">
                   Ad Campaign Performance
                 </h2>
               </div>
 
               {/* Controls */}
-              <div className="flex items-center gap-3 font-sans-body">
+              <div className="flex items-center gap-3 font-sans-body self-end sm:self-auto">
                 <button
                   onClick={prevCarousel}
-                  className="p-2.5 rounded-full bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition shadow-xs"
+                  className="p-2 sm:p-2.5 rounded-full bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition shadow-xs"
                   aria-label="Previous slide"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <span className="text-xs text-stone-700 font-bold px-2">
+                <span className="text-xs text-stone-700 font-bold px-1 sm:px-2">
                   {activeCarouselIdx + 1} / {dashboardScreenshots.length}
                 </span>
                 <button
                   onClick={nextCarousel}
-                  className="p-2.5 rounded-full bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition shadow-xs"
+                  className="p-2 sm:p-2.5 rounded-full bg-white border border-stone-300 text-stone-800 hover:bg-stone-50 transition shadow-xs"
                   aria-label="Next slide"
                 >
                   <ChevronRight className="w-5 h-5" />
@@ -673,7 +727,7 @@ export default function App() {
               </div>
             </div>
 
-            {/* Recreated Dashboard Component matching Meta Ads screenshot UI exactly */}
+            {/* Recreated Dashboard Component matching Meta Ads screenshot UI */}
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeCarouselIdx}
@@ -681,31 +735,31 @@ export default function App() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.25 }}
-                className="bg-white text-[#1c2b36] rounded-2xl p-7 shadow-sm border border-stone-200 font-sans-body"
+                className="bg-white text-[#1c2b36] rounded-2xl p-4 sm:p-7 shadow-sm border border-stone-200 font-sans-body overflow-hidden"
               >
-                <div className="flex items-start justify-between pb-5 border-b border-stone-200 mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-start justify-between pb-4 sm:pb-5 border-b border-stone-200 mb-4 sm:mb-6 gap-2">
                   <div>
-                    <h3 className="font-bold text-xl text-[#1c2b36] flex items-center gap-1.5">
+                    <h3 className="font-bold text-lg sm:text-xl text-[#1c2b36] flex items-center gap-1.5">
                       <span>{currentDashboard.title}</span>
                       <span className="text-stone-400 text-xs">ⓘ</span>
                     </h3>
                     <p className="text-xs text-stone-500 mt-1 font-medium">{currentDashboard.subtitle}</p>
                   </div>
-                  <div className="bg-slate-50 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 border border-slate-300/80 flex items-center gap-1">
+                  <div className="bg-slate-50 px-3 py-1.5 rounded-md text-xs font-semibold text-slate-700 border border-slate-300/80 self-start flex items-center gap-1">
                     <span>{currentDashboard.meta}</span>
                     <span className="text-xs">▼</span>
                   </div>
                 </div>
 
-                {/* Meta ad metric grid boxes */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                {/* Responsive Grid for Meta ad metric boxes */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
                   {currentDashboard.cards.map((c, cidx) => (
-                    <div key={cidx} className="bg-[#f5f6f8] p-4 rounded-xl border border-slate-200/80 flex flex-col justify-between">
-                      <div className="text-[11px] font-semibold text-stone-600 leading-tight">
+                    <div key={cidx} className="bg-[#f5f6f8] p-3.5 sm:p-4 rounded-xl border border-slate-200/80 flex sm:flex-col justify-between items-center sm:items-start">
+                      <div className="text-[11px] font-semibold text-stone-600 leading-tight max-w-[140px] sm:max-w-none">
                         {c.label} <span className="text-stone-400">ⓘ</span>
                       </div>
-                      <div className="mt-3 flex items-baseline gap-2">
-                        <span className="text-2xl font-bold text-slate-900 font-sans-body tracking-tight">{c.value}</span>
+                      <div className="sm:mt-3 flex items-baseline gap-1.5">
+                        <span className="text-xl sm:text-2xl font-bold text-slate-900 font-sans-body tracking-tight">{c.value}</span>
                         {c.change && (
                           <span className="text-xs font-bold text-emerald-600">
                             ↑ {c.change}
@@ -718,15 +772,15 @@ export default function App() {
 
                 {/* Meta Activity Horizontal Bars */}
                 {currentDashboard.activities.length > 0 && (
-                  <div className="space-y-4 pt-4 border-t border-slate-200">
+                  <div className="space-y-3 sm:space-y-4 pt-4 border-t border-slate-200">
                     <div className="text-xs font-bold text-slate-700 uppercase tracking-wide">Activity</div>
                     {currentDashboard.activities.map((bar, bidx) => (
                       <div key={bidx} className="space-y-1">
-                        <div className="flex justify-between text-xs font-medium text-slate-700">
-                          <span>{bar.label}</span>
-                          <span className="font-bold text-slate-900 font-mono">{bar.val}</span>
+                        <div className="flex justify-between text-xs font-medium text-slate-700 gap-2">
+                          <span className="truncate">{bar.label}</span>
+                          <span className="font-bold text-slate-900 font-mono shrink-0">{bar.val}</span>
                         </div>
-                        <div className="h-3 bg-slate-100 rounded-sm overflow-hidden">
+                        <div className="h-2.5 sm:h-3 bg-slate-100 rounded-sm overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: bar.width }}
@@ -745,17 +799,17 @@ export default function App() {
       )}
 
       {/* About Section */}
-      <section className="py-20 border-b border-stone-200/80">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="grid lg:grid-cols-12 gap-12">
+      <section className="py-16 sm:py-20 border-b border-stone-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12">
             <div className="lg:col-span-5">
-              <span className="text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase">Background</span>
-              <h2 className="text-4xl font-serif-display font-bold text-stone-900 mt-2 leading-tight">
+              <span className="text-[11px] sm:text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase">Background</span>
+              <h2 className="text-2xl sm:text-4xl font-serif-display font-bold text-stone-900 mt-2 leading-tight">
                 Computer Science rigor meets acquisition strategy.
               </h2>
             </div>
             <div className="lg:col-span-7">
-              <p className="text-stone-800 text-lg leading-relaxed font-serif font-normal">
+              <p className="text-stone-800 text-base sm:text-lg leading-relaxed font-serif font-normal">
                 Managing full-scale marketing operations for multiple companies simultaneously across Egypt and Jordan requires systematic clarity. My background in CS & AI informs every paid acquisition campaign, content strategy, and web application I deploy.
               </p>
             </div>
@@ -764,24 +818,24 @@ export default function App() {
       </section>
 
       {/* Skills Section */}
-      <section className="py-20 bg-stone-100/50 border-b border-stone-200/80 font-sans-body">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-12">
-            <span className="text-xs font-bold tracking-widest text-stone-500 uppercase">Capabilities</span>
-            <h2 className="text-4xl font-serif-display font-bold text-stone-900 mt-1">Skills & Tooling</h2>
+      <section className="py-16 sm:py-20 bg-stone-100/50 border-b border-stone-200/80 font-sans-body">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="mb-8 sm:mb-12">
+            <span className="text-[11px] sm:text-xs font-bold tracking-widest text-stone-500 uppercase">Capabilities</span>
+            <h2 className="text-2xl sm:text-4xl font-serif-display font-bold text-stone-900 mt-1">Skills & Tooling</h2>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
             {(activeTab === 'marketing' || activeTab === 'all') && (
-              <div className="p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
+              <div className="p-5 sm:p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
-                  <BarChart3 className="w-6 h-6 text-stone-900" />
-                  <h3 className="font-bold text-stone-900 text-xl">Digital Marketing Operations</h3>
+                  <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
+                  <h3 className="font-bold text-stone-900 text-lg sm:text-xl">Digital Marketing Operations</h3>
                 </div>
-                <ul className="space-y-3 text-sm text-stone-800 font-semibold pt-2">
+                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-stone-800 font-semibold pt-2">
                   {['Full-Funnel Paid Advertising & Budgeting', 'Marketing Strategy & Content Calendars', 'Lead Acquisition Pipelines & Influencer Campaigns', 'Performance Analytics & ROI Tracking', 'Creative Direction (Canva, Photoshop)'].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <span className="w-2 h-2 rounded-full bg-stone-900" />
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span className="w-2 h-2 rounded-full bg-stone-900 mt-1.5 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -790,15 +844,15 @@ export default function App() {
             )}
 
             {(activeTab === 'dev' || activeTab === 'all') && (
-              <div className="p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
+              <div className="p-5 sm:p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4">
                 <div className="flex items-center gap-3">
-                  <Code className="w-6 h-6 text-stone-900" />
-                  <h3 className="font-bold text-stone-900 text-xl">Web & Software Engineering</h3>
+                  <Code className="w-5 h-5 sm:w-6 sm:h-6 text-stone-900" />
+                  <h3 className="font-bold text-stone-900 text-lg sm:text-xl">Web & Software Engineering</h3>
                 </div>
-                <ul className="space-y-3 text-sm text-stone-800 font-semibold pt-2">
+                <ul className="space-y-2.5 sm:space-y-3 text-xs sm:text-sm text-stone-800 font-semibold pt-2">
                   {['HTML5, CSS3, JavaScript (ES6+), ReactJS', 'WordPress Custom Themes & Plugins', 'PHP & Core Backend Architecture', 'Flutter Mobile App Development', 'Performance Optimization (NTI Certified)'].map((item, i) => (
-                    <li key={i} className="flex items-center gap-3">
-                      <span className="w-2 h-2 rounded-full bg-stone-900" />
+                    <li key={i} className="flex items-start gap-2.5">
+                      <span className="w-2 h-2 rounded-full bg-stone-900 mt-1.5 shrink-0" />
                       <span>{item}</span>
                     </li>
                   ))}
@@ -810,14 +864,14 @@ export default function App() {
       </section>
 
       {/* Selected Work */}
-      <section className="py-24 border-b border-stone-200/80">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-12">
-            <span className="text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase">Selected Work</span>
-            <h2 className="text-4xl font-serif-display font-bold text-stone-900 mt-1">Shipped Projects & Campaigns</h2>
+      <section className="py-16 sm:py-24 border-b border-stone-200/80">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="mb-8 sm:mb-12">
+            <span className="text-[11px] sm:text-xs font-sans-body font-bold tracking-widest text-stone-500 uppercase">Selected Work</span>
+            <h2 className="text-2xl sm:text-4xl font-serif-display font-bold text-stone-900 mt-1">Shipped Projects & Campaigns</h2>
           </div>
 
-          <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <motion.div layout className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             <AnimatePresence>
               {filteredProjects.map((p) => (
                 <motion.div
@@ -828,7 +882,7 @@ export default function App() {
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.3 }}
                   whileHover={{ y: -4 }}
-                  className={`group rounded-2xl p-7 flex flex-col justify-between transition-all duration-300 shadow-xs border ${
+                  className={`group rounded-2xl p-5 sm:p-7 flex flex-col justify-between transition-all duration-300 shadow-xs border ${
                     p.category === 'marketing'
                       ? 'bg-[#FAF8F5] border-indigo-200 hover:border-indigo-500'
                       : 'bg-[#FAF8F5] border-cyan-200 hover:border-cyan-600'
@@ -836,7 +890,7 @@ export default function App() {
                 >
                   <div className="space-y-3 font-sans-body">
                     <div className="flex items-center justify-between">
-                      <span className={`text-[11px] uppercase font-bold tracking-wider px-3 py-1 rounded-full flex items-center gap-1.5 ${
+                      <span className={`text-[10px] sm:text-[11px] uppercase font-bold tracking-wider px-2.5 sm:px-3 py-1 rounded-full flex items-center gap-1.5 ${
                         p.category === 'marketing'
                           ? 'bg-indigo-900 text-white'
                           : 'bg-cyan-900 text-white'
@@ -855,19 +909,19 @@ export default function App() {
                       </span>
                     </div>
 
-                    <h3 className="text-xl font-bold text-stone-900 tracking-tight">{p.title}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold text-stone-900 tracking-tight">{p.title}</h3>
 
-                    <p className="text-sm font-sans-body font-normal text-stone-700 leading-relaxed">
+                    <p className="text-xs sm:text-sm font-sans-body font-normal text-stone-700 leading-relaxed">
                       {p.desc}
                     </p>
                   </div>
 
-                  <div className="pt-5 font-sans-body space-y-3 border-t border-stone-200/80 mt-4">
+                  <div className="pt-4 sm:pt-5 font-sans-body space-y-3 border-t border-stone-200/80 mt-4">
                     <div className="flex flex-wrap gap-1.5">
                       {p.tags.map((t, tid) => (
                         <span
                           key={tid}
-                          className="text-xs font-semibold px-2.5 py-1 rounded-md bg-stone-200/60 text-stone-800"
+                          className="text-[11px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-stone-200/60 text-stone-800"
                         >
                           {t}
                         </span>
@@ -894,35 +948,35 @@ export default function App() {
       </section>
 
       {/* Experience Timeline */}
-      <section className="py-24 bg-stone-100/50 border-b border-stone-200/80 font-sans-body">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="mb-12">
-            <span className="text-xs font-bold tracking-widest text-stone-500 uppercase">Career Track</span>
-            <h2 className="text-4xl font-serif-display font-bold text-stone-900 mt-1">Experience</h2>
+      <section className="py-16 sm:py-24 bg-stone-100/50 border-b border-stone-200/80 font-sans-body">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6">
+          <div className="mb-8 sm:mb-12">
+            <span className="text-[11px] sm:text-xs font-bold tracking-widest text-stone-500 uppercase">Career Track</span>
+            <h2 className="text-2xl sm:text-4xl font-serif-display font-bold text-stone-900 mt-1">Experience</h2>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {filteredExperiences.map((exp, idx) => (
               <div
                 key={idx}
-                className="p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-4"
+                className="p-5 sm:p-8 rounded-2xl bg-white border border-stone-200 shadow-xs space-y-3 sm:space-y-4"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg text-white ${exp.type === 'marketing' ? 'bg-indigo-900' : 'bg-cyan-900'}`}>
+                    <div className={`p-1.5 sm:p-2 rounded-lg text-white ${exp.type === 'marketing' ? 'bg-indigo-900' : 'bg-cyan-900'}`}>
                       {exp.type === 'marketing' ? <BarChart3 className="w-4 h-4" /> : <Code className="w-4 h-4" />}
                     </div>
-                    <h3 className="text-lg font-bold text-stone-900 tracking-tight">{exp.role}</h3>
+                    <h3 className="text-base sm:text-lg font-bold text-stone-900 tracking-tight">{exp.role}</h3>
                   </div>
 
-                  <span className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider bg-stone-100 text-stone-800 border border-stone-200">
+                  <span className="text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider bg-stone-100 text-stone-800 border border-stone-200 self-start sm:self-auto">
                     {exp.period}
                   </span>
                 </div>
 
-                <div className="text-sm font-bold text-stone-600 pl-11">{exp.company}</div>
+                <div className="text-xs sm:text-sm font-bold text-stone-600 sm:pl-11">{exp.company}</div>
 
-                <ul className="space-y-2 pt-2 text-sm text-stone-800 font-sans-body font-normal leading-relaxed pl-11 border-t border-stone-200/80 mt-3">
+                <ul className="space-y-2 pt-2 text-xs sm:text-sm text-stone-800 font-sans-body font-normal leading-relaxed sm:pl-11 border-t border-stone-200/80 mt-3">
                   {exp.points.map((pt, pidx) => (
                     <li key={pidx} className="flex items-start gap-2.5">
                       <span className="mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 bg-stone-600" />
@@ -937,19 +991,19 @@ export default function App() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="py-24 bg-[#FAF8F5]">
-        <div className="max-w-4xl mx-auto px-6 text-center space-y-8">
-          <h2 className="text-5xl font-serif-display font-bold text-stone-900 tracking-tight">Let's connect</h2>
-          <p className="text-stone-700 font-serif text-xl max-w-xl mx-auto">
+      <section id="contact" className="py-16 sm:py-24 bg-[#FAF8F5]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6 sm:space-y-8">
+          <h2 className="text-3xl sm:text-5xl font-serif-display font-bold text-stone-900 tracking-tight">Let's connect</h2>
+          <p className="text-stone-700 font-serif text-lg sm:text-xl max-w-xl mx-auto px-2">
             Available for marketing strategy, paid ad performance management, or web engineering opportunities.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-5 text-sm font-sans-body font-bold">
+          <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-3 sm:gap-5 text-xs sm:text-sm font-sans-body font-bold">
             <motion.a
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               href="mailto:mahmoudmanar224@gmail.com"
-              className="flex items-center gap-3 text-stone-900 bg-white px-7 py-3.5 rounded-full border border-stone-200 hover:bg-stone-50 transition shadow-xs"
+              className="flex items-center justify-center gap-3 text-stone-900 bg-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-full border border-stone-200 hover:bg-stone-50 transition shadow-xs"
             >
               <Mail className="w-4 h-4 text-stone-900" />
               <span>mahmoudmanar224@gmail.com</span>
@@ -958,12 +1012,12 @@ export default function App() {
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               href="tel:+201090775948"
-              className="flex items-center gap-3 text-stone-900 bg-white px-7 py-3.5 rounded-full border border-stone-200 hover:bg-stone-50 transition shadow-xs"
+              className="flex items-center justify-center gap-3 text-stone-900 bg-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-full border border-stone-200 hover:bg-stone-50 transition shadow-xs"
             >
               <Phone className="w-4 h-4 text-stone-900" />
               <span>+20 109 077 5948</span>
             </motion.a>
-            <div className="flex items-center gap-3 text-stone-900 bg-white px-7 py-3.5 rounded-full border border-stone-200 shadow-xs">
+            <div className="flex items-center justify-center gap-3 text-stone-900 bg-white px-5 sm:px-7 py-3 sm:py-3.5 rounded-full border border-stone-200 shadow-xs">
               <MapPin className="w-4 h-4 text-stone-900" />
               <span>Cairo / Alexandria, Egypt</span>
             </div>
@@ -982,14 +1036,14 @@ export default function App() {
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="p-3.5 bg-white rounded-full text-stone-900 hover:bg-stone-50 border border-stone-200 transition shadow-xs"
+                className="p-3 sm:p-3.5 bg-white rounded-full text-stone-900 hover:bg-stone-50 border border-stone-200 transition shadow-xs"
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.a>
             ))}
           </div>
 
-          <div className="text-xs text-stone-500 font-sans-body pt-8 border-t border-stone-200/80 font-medium uppercase tracking-wider">
+          <div className="text-[11px] sm:text-xs text-stone-500 font-sans-body pt-6 sm:pt-8 border-t border-stone-200/80 font-medium uppercase tracking-wider">
             © 2026 Manar Mahmoud Elnoby. All rights reserved.
           </div>
         </div>
